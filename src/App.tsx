@@ -2,33 +2,39 @@ import React from "react";
 import _ from "lodash";
 
 const schema = {
-  // sectionTitle: Form
-  // sectionTitle: bestAlbums
   bestAlbums: [
-    // list
     {
-      // sectionTitle: #1
-      title: "All Mirrors", // input
-      artist: "Angel Olsen", // input
-      releaseDate: "1/1/19" // input
-    },
-    {
-      // index 2
-      title: "Of Schlagenheim",
-      artist: "black midi",
-      releaseDate: "1/2/19"
+      title: "",
+      artist: "",
+      releaseDate: "",
+      label: ""
     }
   ],
   bestSongs: [
-    // list
     {
-      title: "Janet",
-      artists: "M. T. Hadley"
+      title: "",
+      artists: ""
     }
   ]
 };
 
-const toDoList = ["Item"];
+// let textFile: null | string = null;
+// const makeTextFile = text => {
+//   var data = new Blob([text], { type: "application/json" });
+
+//   // If we are replacing a previously generated file we need to
+//   // manually revoke the object URL to avoid memory leaks.
+//   if (textFile !== null) {
+//     window.URL.revokeObjectURL(textFile);
+//   }
+
+//   textFile = window.URL.createObjectURL(data);
+
+//   // returns a URL you can use as a href
+//   return textFile;
+// };
+
+type TUpdateInput = (path: string, value: string | {}) => void;
 
 type TGenericObject = {
   [k: string]: any;
@@ -39,7 +45,7 @@ type TFormInput = {
   type: "text";
   path: string;
   value: string;
-  onChange: (path: string, value: string) => void;
+  onChange: TUpdateInput;
 };
 
 const FormInput = (props: TFormInput) => {
@@ -48,7 +54,11 @@ const FormInput = (props: TFormInput) => {
       <label>{props.label}</label>
       <input
         type={props.type}
-        onChange={e => props.onChange(props.path, e.target.value)}
+        value={props.value}
+        onChange={e => {
+          console.log("Update path:", props.path);
+          props.onChange(props.path, e.target.value);
+        }}
       />
     </div>
   );
@@ -58,7 +68,7 @@ type TObjectSection = {
   legend: string;
   data: { [k: string]: any };
   path: string;
-  onChange: (path: string, value: string) => void;
+  onChange: TUpdateInput;
 };
 
 const ObjectSection = (props: TObjectSection) => {
@@ -80,11 +90,47 @@ const ObjectSection = (props: TObjectSection) => {
   );
 };
 
+type TAddNewItemButton = {
+  path: string;
+  data: any[];
+  onChange: (path: string, value: string | {}) => void;
+};
+
+const AddNewItemButton = (props: TAddNewItemButton) => {
+  const setNewItem = (data: any[]) => {
+    const previousItem = data[data.length - 1];
+    if (_.isString(previousItem)) {
+      return previousItem;
+    } else if (_.isArray(previousItem)) {
+      return [...previousItem];
+    } else if (_.isObject(previousItem)) {
+      return { ...previousItem };
+    } else {
+      return "";
+    }
+  };
+
+  return (
+    <button
+      onClick={e => {
+        e.preventDefault();
+        props.onChange(
+          `${props.path}[${props.data.length}]`,
+          setNewItem(props.data)
+        );
+      }}
+      role={"button"}
+    >
+      Add new item
+    </button>
+  );
+};
+
 type TArraySection = {
   legend: string;
   data: any[];
   path: string;
-  onChange: (path: string, value: string) => void;
+  onChange: (path: string, value: string | {}) => void;
 };
 
 const ArraySection = (props: TArraySection) => {
@@ -102,7 +148,11 @@ const ArraySection = (props: TArraySection) => {
           />
         );
       })}
-      <button>Add new item</button>
+      <AddNewItemButton
+        onChange={props.onChange}
+        data={props.data}
+        path={props.path}
+      />
     </fieldset>
   );
 };
@@ -111,7 +161,7 @@ type TDetermineForm = {
   title: string;
   data: [] | {} | string;
   path: string;
-  onChange: (path: string, value: string) => void;
+  onChange: TUpdateInput;
 };
 
 const DetermineForm = (props: TDetermineForm) => {
@@ -149,19 +199,25 @@ const DetermineForm = (props: TDetermineForm) => {
 };
 
 const App = () => {
-  const [formData, setFormData] = React.useState<TGenericObject>(schema);
+  const [formData, setFormData] = React.useState<TGenericObject>({
+    toDoList: [""]
+  });
+  // const [generatedFile, setGeneratedFile] = React.useState("");
 
-  const updateInput = (path: string, value: string) => {
+  const updateInput: TUpdateInput = (path, value) => {
     const trimmedPath = path.substring(1);
-    setFormData(_.set(formData, trimmedPath, value));
+    setFormData(_.set({ ...formData }, trimmedPath, value));
   };
 
   return (
     <div>
-      <input
-        type="text"
-        onChange={e => setFormData({ ...formData, newField: e.target.value })}
-      />
+      {/* <button
+        onClick={e => {
+          e.preventDefault();
+        }}
+      >
+        Generate link to file
+      </button> */}
       <pre>{JSON.stringify(formData, null, 4)}</pre>
       <form>
         <DetermineForm
