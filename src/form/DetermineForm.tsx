@@ -4,6 +4,7 @@ import { AddNewItemButton } from "./AddNewItemButton";
 import { FormInput } from "./FormInput";
 import _ from "lodash";
 import { FormContext } from "../reducer";
+import { deepCopy } from "../utils/deepCopy";
 
 type TObjectSection = {
   legend: string;
@@ -16,17 +17,24 @@ const ObjectSection = (props: TObjectSection) => {
   return (
     <fieldset>
       <legend>{props.legend}</legend>
-      {Object.entries(props.data).map(([key, data], index) => {
-        return (
-          <DetermineForm
-            key={`${props.path}-${index}`}
-            title={key}
-            data={data}
-            path={`${props.path}.${key}`}
-            onChange={props.onChange}
-          />
-        );
-      })}
+      <div
+        style={{
+          boxShadow: "0.1rem 0 0.3rem 0.3rem rgba(0,0,0,0.17)",
+          paddingLeft: "1rem"
+        }}
+      >
+        {Object.entries(props.data).map(([key, data], index) => {
+          return (
+            <DetermineForm
+              key={`${props.path}-${index}`}
+              title={key}
+              data={data}
+              path={`${props.path}.${key}`}
+              onChange={props.onChange}
+            />
+          );
+        })}
+      </div>
     </fieldset>
   );
 };
@@ -67,7 +75,7 @@ const ArraySection = (props: TArraySection) => {
       })}
       <AddNewItemButton
         onChange={props.onChange}
-        data={props.data}
+        data={deepCopy(props.data)}
         path={props.path}
       />
     </fieldset>

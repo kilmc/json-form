@@ -16,7 +16,7 @@ const initialState: TReducerState = {
 
 describe("updateFormDataSchema", () => {
   describe("when adding new items", () => {
-    fit("should add an array of strings", () => {
+    it("should add an array of strings", () => {
       const newSchema = { todos: [""] };
       const updated = updateFormDataSchema(initialState, newSchema).forms[0];
 

@@ -12,7 +12,7 @@ export const FormInput = (props: TFormInput) => {
   const { dispatch } = useContext(FormContext);
 
   return (
-    <div>
+    <div className="flex flex-column">
       <label>{props.label}</label>
       <input
         type={props.type}

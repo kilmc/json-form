@@ -9,7 +9,7 @@ type TFormSelect = {
 export const FormSelect = (props: TFormSelect) => {
   const { dispatch } = useContext(FormContext);
   const { id } = getCurrentForm(props.state);
-  console.log("BIG", props.state.forms);
+
   return (
     <select
       onChange={e => {

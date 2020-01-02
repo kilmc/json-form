@@ -1,12 +1,11 @@
 import { TGenericObject } from "../types";
 import _ from "lodash";
 import { deepDiff } from "../utils/deepDiff";
+import { deepCopy } from "../utils/deepCopy";
 import { TReducerState } from "../reducer";
 import { getCurrentForm, getCurrentFormIndex } from "../utils/getCurrentForm";
 
 const updateFormData = (diff: TGenericObject, data: TGenericObject) => {
-  console.log("diff", diff);
-  console.log("data", data);
   const entries = Object.entries(diff);
 
   entries
@@ -36,23 +35,33 @@ const updateFormData = (diff: TGenericObject, data: TGenericObject) => {
       }
     })[0];
 
-  // const updated = entries
-  //   .filter(([_, value]) => {
-  //     return ["updated"].includes(value.type);
-  //   })
-  //   .map(([key, value]) => {
-  //     if (_.isArray(data)) {
-  //       return data
-  //         .map((subItem: TGenericObject) => {
-  //           const newValue = _.isEmpty(value.data) ? subItem[key] : value.data;
-  //           return _.set({ ...subItem }, key, newValue);
-  //         })
-  //         .reduce((xs, x) => xs.concat(x), []);
-  //     } else {
-  //       const newValue = _.isEmpty(value.data) ? data[key] : value.data;
-  //       return _.set({ ...data }, key, newValue);
-  //     }
-  //   })[0];
+  const updated = entries
+    .filter(([_, value]) => {
+      return ["updated"].includes(value.type);
+    })
+    .map(([key, value]) => {
+      if (_.isArray(data)) {
+        return data
+          .map((subItem: TGenericObject) => {
+            const newValue = _.isEmpty(value.data) ? subItem[key] : value.data;
+            return _.set({ ...subItem }, key, newValue);
+          })
+          .reduce((xs, x) => xs.concat(x), []);
+      } else {
+        let newValue;
+        if (_.isEmpty(value.data)) {
+          newValue = data[key];
+        } else if (_.isArray(value.data)) {
+          newValue = value.data;
+        } else if (_.isObject(value.data)) {
+          updateFormData(value.data, data[key]);
+        } else {
+          newValue = value.data;
+        }
+
+        return _.set({ ...data }, key, newValue);
+      }
+    })[0];
 
   const deleted = entries
     .filter(([_, value]) => {
@@ -70,26 +79,20 @@ const updateFormData = (diff: TGenericObject, data: TGenericObject) => {
       }
     })[0];
 
-  return _.merge(data, created, deleted);
+  return _.merge(data, created, deleted, updated);
 };
-
-function deep<T extends object>(source: T): T {
-  return JSON.parse(JSON.stringify(source));
-}
 
 export const updateFormDataSchema = (
   state: TReducerState,
   newSchema: TGenericObject
 ): TReducerState => {
-  const updatedState = deep(state);
+  const updatedState = deepCopy(state);
 
   const formEntry = getCurrentForm(updatedState);
   const formIndex = getCurrentFormIndex(updatedState);
   const { formData, schema } = formEntry;
 
   const diff = deepDiff(schema, newSchema);
-  console.log("OUTER DIFF", diff);
-  console.log("OUTER DATA", formData);
   const updatedFormData = updateFormData(diff, { ...formData });
 
   updatedState.forms[formIndex].schema = newSchema;

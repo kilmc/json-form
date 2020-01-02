@@ -4,6 +4,7 @@ import { getCurrentForm, getCurrentFormIndex } from "./utils/getCurrentForm";
 import _ from "lodash";
 import { save } from "./utils/localStorage";
 import { updateFormDataSchema } from "./actions/updateFormDataSchema";
+import { deepCopy } from "./utils/deepCopy";
 
 const eoyInit: TFormEntry = {
   id: "form-2",
@@ -138,7 +139,7 @@ export function reducer(
       return update({ ...state });
     case "ADD_ITEM":
       const addItemPath = action.path.substring(1);
-      const initialValue = _.get(schema, addItemPath)[0];
+      const initialValue = deepCopy(_.get(schema, addItemPath)[0]);
       const arrayLength = _.get(state.forms[formIndex].formData, addItemPath)
         .length;
       const newItemPath = `${addItemPath}[${arrayLength}]`;
