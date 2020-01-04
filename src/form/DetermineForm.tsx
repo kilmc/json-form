@@ -11,30 +11,25 @@ type TObjectSection = {
   data: { [k: string]: any };
   path: string;
   onChange: TUpdateInput;
+  fromArray?: boolean;
 };
 
 const ObjectSection = (props: TObjectSection) => {
   return (
     <fieldset>
-      <legend>{props.legend}</legend>
-      <div
-        style={{
-          boxShadow: "0.1rem 0 0.3rem 0.3rem rgba(0,0,0,0.17)",
-          paddingLeft: "1rem"
-        }}
-      >
-        {Object.entries(props.data).map(([key, data], index) => {
-          return (
-            <DetermineForm
-              key={`${props.path}-${index}`}
-              title={key}
-              data={data}
-              path={`${props.path}.${key}`}
-              onChange={props.onChange}
-            />
-          );
-        })}
-      </div>
+      {!props.fromArray && <legend>{_.startCase(props.legend)}</legend>}
+
+      {Object.entries(props.data).map(([key, data], index) => {
+        return (
+          <DetermineForm
+            key={`${props.path}-${index}`}
+            title={key}
+            data={data}
+            path={`${props.path}.${key}`}
+            onChange={props.onChange}
+          />
+        );
+      })}
     </fieldset>
   );
 };
@@ -51,28 +46,31 @@ const ArraySection = (props: TArraySection) => {
 
   return (
     <fieldset>
-      <legend>{props.legend}</legend>
-      {props.data.map((data, index) => {
-        return (
-          <React.Fragment key={index}>
-            <button
-              onClick={e => {
-                e.preventDefault();
-                dispatch({ type: "DELETE_ITEM", path: props.path, index });
-              }}
-            >
-              [ X ] Delete
-            </button>
-            <DetermineForm
-              key={`${props.path}-${index}`}
-              title={`${index + 1}`}
-              data={data}
-              path={`${props.path}[${index}]`}
-              onChange={props.onChange}
-            />
-          </React.Fragment>
-        );
-      })}
+      <ol>
+        {props.data.map((data, index) => {
+          return (
+            <li key={index} className="p1 relative">
+              <button
+                onClick={e => {
+                  e.preventDefault();
+                  dispatch({ type: "DELETE_ITEM", path: props.path, index });
+                }}
+                className="absolute r1"
+              >
+                [ X ] Delete
+              </button>
+              <DetermineForm
+                key={`${props.path}-${index}`}
+                title={`${index + 1}`}
+                data={data}
+                path={`${props.path}[${index}]`}
+                onChange={props.onChange}
+                fromArray={true}
+              />
+            </li>
+          );
+        })}
+      </ol>
       <AddNewItemButton
         onChange={props.onChange}
         data={deepCopy(props.data)}
@@ -87,6 +85,7 @@ type TDetermineForm = {
   data: [] | {} | string;
   path: string;
   onChange: TUpdateInput;
+  fromArray?: boolean;
 };
 
 export const DetermineForm = (props: TDetermineForm) => {
@@ -106,6 +105,7 @@ export const DetermineForm = (props: TDetermineForm) => {
         data={props.data}
         path={`${props.path}`}
         onChange={props.onChange}
+        fromArray={props.fromArray}
       />
     );
   } else if (_.isString(props.data)) {
@@ -115,6 +115,7 @@ export const DetermineForm = (props: TDetermineForm) => {
         type="text"
         path={`${props.path}`}
         value={props.data}
+        fromArray={props.fromArray}
       />
     );
   } else {

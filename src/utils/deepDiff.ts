@@ -6,11 +6,16 @@ const VALUE_UPDATED = "updated";
 const VALUE_DELETED = "deleted";
 const VALUE_UNCHANGED = "unchanged";
 
+type TcompareValues = "created" | "updated" | "deleted" | "unchanged";
+
 const isValue = (x: any) => {
   return !_.isObject(x) && !_.isArray(x);
 };
 
-const compareValues = (value1: any, value2: any) => {
+const compareValues = (value1: any, value2: any): TcompareValues => {
+  if (_.isArray(value1) && _.isArray(value2)) {
+    return compareValues(value1[0], value2[0]);
+  }
   if (value1 === value2) {
     return VALUE_UNCHANGED;
   }
@@ -27,6 +32,9 @@ const compareValues = (value1: any, value2: any) => {
   if (value2 === undefined) {
     return VALUE_DELETED;
   }
+
+  console.log("VALUE 1", value1);
+  console.log("VALUE 2", value2);
   return VALUE_UPDATED;
 };
 

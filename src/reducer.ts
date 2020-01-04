@@ -47,6 +47,7 @@ const eoyInit: TFormEntry = {
 
 export type TReducerState = {
   currentForm: string;
+  editing: boolean;
   forms: TFormEntry[];
 };
 
@@ -58,6 +59,7 @@ export const initialForm = {
 };
 
 export const initialState: TReducerState = {
+  editing: false,
   currentForm: "form-1",
   forms: [initialForm, eoyInit]
 };
@@ -94,7 +96,9 @@ type TReducerAction =
       value: string;
     }
   | { type: "ADD_ITEM"; path: string }
-  | { type: "DELETE_ITEM"; path: string; index: number };
+  | { type: "DELETE_ITEM"; path: string; index: number }
+  | { type: "VIEW_SCHEMA_EDITOR" }
+  | { type: "VIEW_FORM" };
 
 export function reducer(
   state: TReducerState,
@@ -111,6 +115,16 @@ export function reducer(
   switch (action.type) {
     case "CHANGE_FORM":
       return update({ ...state, currentForm: action.id });
+    case "VIEW_FORM":
+      return update({
+        ...state,
+        editing: false
+      });
+    case "VIEW_SCHEMA_EDITOR":
+      return update({
+        ...state,
+        editing: true
+      });
     case "ADD_FORM":
       const newFormId = `form-${state.forms.length + 1}`;
       const newForm: TFormEntry = {
@@ -122,6 +136,7 @@ export function reducer(
 
       return update({
         ...state,
+        editing: true,
         currentForm: newFormId,
         forms: state.forms.concat(newForm)
       });

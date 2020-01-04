@@ -29,7 +29,7 @@ export const FormEditor = (props: TFormEditor) => {
           }
         />
         <textarea
-          style={{ height: "60vh" }}
+          className="h60vh"
           onChange={e => {
             setDirty(true);
             setNewSchema(e.target.value);

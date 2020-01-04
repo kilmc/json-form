@@ -79,7 +79,8 @@ const updateFormData = (diff: TGenericObject, data: TGenericObject) => {
       }
     })[0];
 
-  return _.merge(data, created, deleted, updated);
+  const withDeleted = deleted || data;
+  return _.merge(withDeleted, created, updated);
 };
 
 export const updateFormDataSchema = (

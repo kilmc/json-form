@@ -10,6 +10,7 @@ const formEntry: TFormEntry = {
 };
 
 const initialState: TReducerState = {
+  editing: false,
   currentForm: "form-1",
   forms: [formEntry]
 };
@@ -39,6 +40,7 @@ describe("updateFormDataSchema", () => {
     it("should add an array of objects", () => {
       const currentState: TReducerState = {
         currentForm: "form-1",
+        editing: false,
         forms: [
           {
             ...formEntry,
@@ -61,6 +63,7 @@ describe("updateFormDataSchema", () => {
     it("should remove a key and value", () => {
       const currentState: TReducerState = {
         currentForm: "form-1",
+        editing: false,
         forms: [
           {
             ...formEntry,
@@ -81,6 +84,7 @@ describe("updateFormDataSchema", () => {
     it("should remove a key and value", () => {
       const currentState: TReducerState = {
         currentForm: "form-1",
+        editing: false,
         forms: [
           {
             ...formEntry,
@@ -103,6 +107,32 @@ describe("updateFormDataSchema", () => {
           { title: "Empty", artist: "M. T. Hadley" },
           { title: "Be On Fire", artist: "Chrome Sparks" }
         ]
+      });
+    });
+  });
+
+  describe("when deleting a root key and value", () => {
+    it("should remove the root key and value", () => {
+      const currentState: TReducerState = {
+        currentForm: "form-1",
+        editing: false,
+        forms: [
+          {
+            ...formEntry,
+            schema: { todos: [""], todones: [""] },
+            formData: {
+              todos: ["Milk", "Bread", "Cheese"],
+              todones: ["Coffee", "Tea"]
+            }
+          }
+        ]
+      };
+      const newSchema = { todos: [""] };
+      const updated = updateFormDataSchema(currentState, newSchema).forms[0];
+
+      expect(updated.schema).toBe(newSchema);
+      expect(updated.formData).toStrictEqual({
+        todos: ["Milk", "Bread", "Cheese"]
       });
     });
   });

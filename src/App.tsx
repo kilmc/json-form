@@ -1,30 +1,24 @@
-import React, { useReducer, useState } from "react";
+import React, { useReducer } from "react";
 import { FormDisplay } from "./form";
 import { FormEditor } from "./form-editor";
-import { FormSelect } from "./FormSelect";
+
 import { reducer, FormContext } from "./reducer";
 import { getCurrentForm } from "./utils/getCurrentForm";
 import { load } from "./utils/localStorage";
+import { Header } from "./Header";
 
 const App = () => {
   const [state, dispatch] = useReducer(reducer, load());
   const { title, schema, formData, id } = getCurrentForm(state);
-  const [editing, setEditing] = useState(false);
 
   return (
     <FormContext.Provider value={{ state, dispatch }}>
-      <header>
-        <button onClick={_ => window.localStorage.removeItem("forms")}>
-          Clear Cache
-        </button>
-        <button onClick={() => setEditing(!editing)}>
-          {editing ? "View Form" : "Edit Schema"}
-        </button>
-        <FormSelect state={state} />
-        <button onClick={e => dispatch({ type: "ADD_FORM" })}>New form</button>
-      </header>
-      <div className="layout" style={{ padding: "2rem" }}>
-        {editing ? (
+      <Header formData={formData} />
+      <div
+        key={JSON.stringify(state.editing)}
+        className="layout p2 bg-grey-200"
+      >
+        {state.editing ? (
           <FormEditor
             title={title}
             schema={schema}
